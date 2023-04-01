@@ -1,4 +1,4 @@
-package messageHandler
+package plain
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"github.com/SevereCloud/vksdk/v2/events"
 )
 
-func HandlePlain(messageObject events.MessageNewObject) {
+func Handle(messageObject events.MessageNewObject) {
 	if (len(messageObject.Message.FwdMessages) > 0) {
 		for _, message := range messageObject.Message.FwdMessages {
 			if (strconv.Itoa(message.FromID) == os.Getenv("HW_ID")) {
@@ -26,7 +26,7 @@ func HandlePlain(messageObject events.MessageNewObject) {
 func handleHwForward(message object.MessagesMessage, senderId int) {
 	if (isProfileMessage(message.Text)) {
 		fmt.Println("That's a profile message from " + strconv.Itoa(senderId))
-		plain.HandleProfile(message.Text, senderId)
+		profile.HandleProfile(message.Text, senderId)
 		return
 	}
 

@@ -5,7 +5,7 @@ services:
       context: ./src/bot
       dockerfile: Dockerfile-dev
     volumes:
-      - ./volumes/bot:/app
+      - ./src/bot:/app
       - ./volumes/bot_mod_cache:/go/pkg/mod
     deploy:
       resources:
