@@ -2,12 +2,12 @@ package main
 
 import (
     "context"
-    //"fmt"
     "log"
     "os"
     "strings"
 
     "huoqiang/bot/messageHandler"
+    "huoqiang/bot/database"
 
     "github.com/SevereCloud/vksdk/v2/api"
     //"github.com/SevereCloud/vksdk/v2/api/params"
@@ -19,6 +19,8 @@ func main() {
   token := os.Getenv("TOKEN")
   prefix := os.Getenv("PREFIX")
   vk := api.NewVK(token)
+
+  database.Init()
 
   // get information about the group
   group, err := vk.GroupsGetByID(nil)

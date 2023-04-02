@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"huoqiang/bot/messageHandler/plain"
 
@@ -24,13 +25,15 @@ func Handle(messageObject events.MessageNewObject) {
 }
 
 func handleHwForward(message object.MessagesMessage, senderId int) {
+	messageDate := time.Unix(int64(message.Date), 0)
+
 	if (isProfileMessage(message.Text)) {
 		fmt.Println("That's a profile message from " + strconv.Itoa(senderId))
-		profile.HandleProfile(message.Text, senderId)
+		profile.HandleProfile(message.Text, senderId, messageDate)
 		return
 	}
 
-	fmt.Println("fuck!")
+	fmt.Println("bad message " + message.Text)
 }
 
 func isProfileMessage(messageText string) bool {
