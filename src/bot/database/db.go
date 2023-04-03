@@ -35,6 +35,5 @@ func Init() {
 }
 
 func GetDb() *gorm.DB {
-	fmt.Println(db)
 	return db
 }

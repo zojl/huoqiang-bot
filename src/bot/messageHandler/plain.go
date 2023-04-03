@@ -29,6 +29,7 @@ func handleHwForward(message object.MessagesMessage, senderId int) {
 
 	if (isProfileMessage(message.Text)) {
 		fmt.Println("That's a profile message from " + strconv.Itoa(senderId))
+                fmt.Println("Contents: " + message.Text)
 		profile.HandleProfile(message.Text, senderId, messageDate)
 		return
 	}

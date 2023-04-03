@@ -2,5 +2,5 @@ package model
 
 type User struct {
 	Id uint `gorm:"primaryKey"`
-	VkId uint
+	VkId uint `gorm:"unique"`
 }

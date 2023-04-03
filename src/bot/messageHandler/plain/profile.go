@@ -56,6 +56,8 @@ var regulars = []string {
 	`🔎Мудрость: [\d]+\+[\d]+ \((?P<Wisdom>\d+)\)`,
 	`🔋: (?P<Stamina>\d+)`,
 	`🔋Выносливость: (?P<Stamina>\d+)`,
+	`\n⚔: (?P<Target>[🔐💠🚧🎭🈵🔱🇺🇸]{1,2})`,
+	`Занятие:\n[А-Яа-я ⚔]*(?P<Target>[🔐💠🚧🎭🈵🔱🇺🇸]{1,2})`,
 }
 
 var compiledRegulars = make([]*regexp.Regexp, len(regulars), len(regulars))
@@ -71,10 +73,8 @@ func storeParsedProfile(parsedProfile *ProfileParseResult, senderId int, message
 	user := getUser(parsedProfile, senderId)
 	fraction := getFraction(parsedProfile)
 	team := getTeam(parsedProfile, fraction)
-	insertProfile(parsedProfile, user, fraction, team, messageTime)
-
-	fmt.Printf("%+v\n%+v\n%+v\n", user, fraction, team)
-
+	target := getTarget(parsedProfile, fraction)
+	insertProfile(parsedProfile, user, fraction, team, target, messageTime)
 }
 
 func getUser(parsedProfile *ProfileParseResult, senderId int) *model.User {
@@ -94,7 +94,7 @@ func getFraction(parsedProfile *ProfileParseResult) *model.Fraction {
 	fraction := model.Fraction{}
 	err := db.Unscoped().Where("Name = ?", parsedProfile.Fraction).First(&fraction).Error
 	if (err != nil) {
-		log.Fatal("Erroneous fraction: " + parsedProfile.Fraction)
+		log.Fatal("Erroneous fraction name: " + parsedProfile.Fraction)
 	}
 
 	return &fraction
@@ -116,7 +116,34 @@ func getTeam(parsedProfile *ProfileParseResult, fraction *model.Fraction) *model
 	return &team
 }
 
-func insertProfile(parsedProfile *ProfileParseResult, user *model.User, fraction *model.Fraction, team *model.Team, messageTime time.Time) {
+func getTarget(parsedProfile *ProfileParseResult, userFraction *model.Fraction) *model.Fraction {
+	if (len(parsedProfile.Target) == 0) {
+		var fraction model.Fraction
+		return &fraction
+	}
+
+	if (parsedProfile.Target == "🔐") {
+		return userFraction
+	}
+
+	db := database.GetDb()
+	fraction := model.Fraction{}
+	err := db.Unscoped().Where("Icon = ?", parsedProfile.Target).First(&fraction).Error
+	if (err != nil) {
+		log.Fatal("Erroneous fraction icon: " + parsedProfile.Target)
+	}
+
+	return &fraction
+}
+
+func insertProfile(
+	parsedProfile *ProfileParseResult,
+	user *model.User,
+	fraction *model.Fraction,
+	team *model.Team,
+	target *model.Fraction,
+	messageTime time.Time,
+) {
 	var (
 		profile model.Profile
 		val uint64
@@ -165,6 +192,12 @@ func insertProfile(parsedProfile *ProfileParseResult, user *model.User, fraction
 	profile.Username = parsedProfile.Username
 	profile.Vkcoin, _ = strconv.ParseFloat(parsedProfile.Vkcoin, 10)
 	profile.Lead = getLeadType(parsedProfile.Lead)
+
+	if (target.Id > 0) {
+		profile.Target = *target
+	} else {
+		profile.TargetId = nil
+	}
 
 	db := database.GetDb()
 	db.Create(&profile)
@@ -255,4 +288,5 @@ type ProfileParseResult struct {
 	Cunning string
 	Wisdom string
 	Stamina string
+	Target string
 }

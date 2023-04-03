@@ -28,6 +28,8 @@ type Profile struct {
 	Cunning uint
 	Wisdom uint
 	Stamina uint
+	TargetId *uint `gorm:"null"`
+	Target Fraction `gorm:"foreignKey:TargetId;null;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	UserId uint
 	User User `gorm:"foreignKey:UserId"`
 	MessageDate time.Time
