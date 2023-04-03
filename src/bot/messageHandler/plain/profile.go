@@ -13,7 +13,7 @@ import (
 )
 
 var regulars = []string {
-	`(?P<Username>[a-zA-Z0-9а-яА-ЯёЁ\s,_\-!?\$<>]{3,25})` +
+	`(?P<Username>[a-zA-Z0-9а-яА-ЯёЁ ,_\-!?\$<>]{3,25})` +
 		`\s\(` +
 		`(?P<Lead>\S?)(?P<Squad>[A-Z]{2})\s\|\s\S+` +
 		`(?P<Fraction>Huǒqiáng|Aegis|V-hack|Phantoms|NetKings|NHS)` +
