@@ -1,4 +1,4 @@
-package profile
+package plain
 
 import (
 	"fmt"
@@ -64,17 +64,17 @@ var compiledRegulars = make([]*regexp.Regexp, len(regulars), len(regulars))
 
 var areRegularsCompiled = false
 
-func HandleProfile(messageText string, senderId int, messageTime time.Time) {
+func HandleProfile(messageText string, senderId int, messageTime time.Time) bool {
 	parsedProfile := parseProfile(messageText)
-	storeParsedProfile(parsedProfile, senderId, messageTime)
+	return storeParsedProfile(parsedProfile, senderId, messageTime)
 }
 
-func storeParsedProfile(parsedProfile *ProfileParseResult, senderId int, messageTime time.Time) {
+func storeParsedProfile(parsedProfile *ProfileParseResult, senderId int, messageTime time.Time) bool {
 	user := getUser(parsedProfile, senderId)
 	fraction := getFraction(parsedProfile)
 	team := getTeam(parsedProfile, fraction)
 	target := getTarget(parsedProfile, fraction)
-	insertProfile(parsedProfile, user, fraction, team, target, messageTime)
+	return insertProfile(parsedProfile, user, fraction, team, target, messageTime)
 }
 
 func getUser(parsedProfile *ProfileParseResult, senderId int) *model.User {
@@ -143,7 +143,7 @@ func insertProfile(
 	team *model.Team,
 	target *model.Fraction,
 	messageTime time.Time,
-) {
+) bool {
 	var (
 		profile model.Profile
 		val uint64
@@ -201,6 +201,8 @@ func insertProfile(
 
 	db := database.GetDb()
 	db.Create(&profile)
+
+	return profile.Id != 0
 }
 
 func getLeadType(icon string) uint {

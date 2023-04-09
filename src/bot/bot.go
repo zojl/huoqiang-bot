@@ -10,7 +10,6 @@ import (
     "huoqiang/bot/database"
 
     "github.com/SevereCloud/vksdk/v2/api"
-    //"github.com/SevereCloud/vksdk/v2/api/params"
     "github.com/SevereCloud/vksdk/v2/events"
     "github.com/SevereCloud/vksdk/v2/longpoll-bot"
 )
@@ -35,26 +34,15 @@ func main() {
   }
 
   lp.MessageNew(func(_ context.Context, obj events.MessageNewObject) {
-    log.Printf("%d: %s", obj.Message.PeerID, obj.Message.Text)
-    if (strings.HasPrefix(obj.Message.Text, prefix)) {
-      log.Printf("Received command: %s", obj.Message);
-    } else {
-      plain.Handle(obj)
+    if (os.Getenv("ENV") == "dev") {
+        log.Printf("%d: %s", obj.Message.PeerID, obj.Message.Text)
     }
-
-	  /*
-        if obj.Message.Text == "ping" {
-		  b := params.NewMessagesSendBuilder()
-		  b.Message("pong")
-		  b.RandomID(0)
-		  b.PeerID(obj.Message.PeerID)
-
-		  _, err := vk.MessagesSend(b.Params)
-		  if err != nil {
-			  log.Fatal(err)
-		  }
-	  }
-      */
+    
+    if (strings.HasPrefix(obj.Message.Text, prefix)) {
+        log.Printf("Received command: %s", obj.Message);
+    } else {
+        messageHandler.HandlePlain(obj, vk)
+    }
   })
 
   log.Println("Start Long Poll")

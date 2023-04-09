@@ -1,4 +1,4 @@
-package plain
+package messageHandler
 
 import (
 	"fmt"
@@ -9,28 +9,36 @@ import (
 
 	"huoqiang/bot/messageHandler/plain"
 
+	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
 	"github.com/SevereCloud/vksdk/v2/events"
 )
 
-func Handle(messageObject events.MessageNewObject) {
+func HandlePlain(messageObject events.MessageNewObject, vk *api.VK) {
 	if (len(messageObject.Message.FwdMessages) > 0) {
 		for _, message := range messageObject.Message.FwdMessages {
 			if (strconv.Itoa(message.FromID) == os.Getenv("HW_ID")) {
-				//fmt.Printf("%+v\n", messageObject)
-				handleHwForward(message, messageObject.Message.FromID)
+				handleHwForward(message, &messageObject.Message, vk)
 			}
 		}
 	}
 }
 
-func handleHwForward(message object.MessagesMessage, senderId int) {
+func handleHwForward(message object.MessagesMessage, parentMessage *object.MessagesMessage, vk *api.VK) {
 	messageDate := time.Unix(int64(message.Date), 0)
 
 	if (isProfileMessage(message.Text)) {
-		fmt.Println("That's a profile message from " + strconv.Itoa(senderId))
-                fmt.Println("Contents: " + message.Text)
-		profile.HandleProfile(message.Text, senderId, messageDate)
+		senderId := parentMessage.FromID
+		if (os.Getenv("ENV") == "dev") {
+			fmt.Println("That's a profile message from " + strconv.Itoa(senderId))
+			fmt.Println("Contents: " + message.Text)
+		}
+		if (plain.HandleProfile(message.Text, senderId, messageDate)) {
+			peerId := parentMessage.PeerID
+			messageId := parentMessage.ID
+			ReplyTo(peerId, messageId, "Профиль принят", vk)
+		}
+		
 		return
 	}
 
