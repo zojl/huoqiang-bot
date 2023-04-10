@@ -34,9 +34,7 @@ func handleHwForward(message object.MessagesMessage, parentMessage *object.Messa
 			fmt.Println("Contents: " + message.Text)
 		}
 		if (plain.HandleProfile(message.Text, senderId, messageDate)) {
-			peerId := parentMessage.PeerID
-			messageId := parentMessage.ID
-			ReplyTo(peerId, messageId, "Профиль принят", vk)
+			ReplyTo(parentMessage, "Профиль принят", vk)
 		}
 		
 		return
