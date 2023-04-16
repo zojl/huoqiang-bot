@@ -10,6 +10,7 @@ func GetAllModels() []interface{} {
 		User{},
 		Team{},
 		Profile{},
+		Report{},
 	}
 }
 

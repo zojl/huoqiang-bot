@@ -34,7 +34,6 @@ func main() {
 
     cb.MessageNew(func(_ context.Context, obj events.MessageNewObject) {
         if (os.Getenv("ENV") == "dev") {
-            log.Printf("%d: %s", obj.Message.PeerID, obj.Message.Text)
             log.Printf("%+v\n", obj)
         }
 

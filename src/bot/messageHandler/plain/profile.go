@@ -10,9 +10,10 @@ import (
 
 	"huoqiang/bot/database"
 	"huoqiang/bot/database/model"
+	"huoqiang/bot/database/repository"
 )
 
-var regulars = []string {
+var regulars = [...]string {
 	`(?P<Username>[a-zA-Z0-9а-яА-ЯёЁ ,_\-!?\$<>]{3,25})` +
 		`\s\(` +
 		`(?P<Lead>\S?)(?P<Squad>[A-Z]{2})\s\|\s\S+` +
@@ -61,7 +62,6 @@ var regulars = []string {
 }
 
 var compiledRegulars = make([]*regexp.Regexp, len(regulars), len(regulars))
-
 var areRegularsCompiled = false
 
 func HandleProfile(messageText string, senderId int, messageTime time.Time) bool {
@@ -70,23 +70,11 @@ func HandleProfile(messageText string, senderId int, messageTime time.Time) bool
 }
 
 func storeParsedProfile(parsedProfile *ProfileParseResult, senderId int, messageTime time.Time) bool {
-	user := getUser(parsedProfile, senderId)
+	user := repository.FindOrCreateUserByVkId(senderId)
 	fraction := getFraction(parsedProfile)
 	team := getTeam(parsedProfile, fraction)
 	target := getTarget(parsedProfile, fraction)
 	return insertProfile(parsedProfile, user, fraction, team, target, messageTime)
-}
-
-func getUser(parsedProfile *ProfileParseResult, senderId int) *model.User {
-	db := database.GetDb()
-	user := model.User{}
-	err := db.Unscoped().Where("vk_id = ?", senderId).First(&user).Error
-	if (err != nil) {
-		user.VkId = uint(senderId)
-		db.Create(&user)
-	}
-
-	return &user
 }
 
 func getFraction(parsedProfile *ProfileParseResult) *model.Fraction {
@@ -126,14 +114,9 @@ func getTarget(parsedProfile *ProfileParseResult, userFraction *model.Fraction) 
 		return userFraction
 	}
 
-	db := database.GetDb()
-	fraction := model.Fraction{}
-	err := db.Unscoped().Where("Icon = ?", parsedProfile.Target).First(&fraction).Error
-	if (err != nil) {
-		log.Fatal("Erroneous fraction icon: " + parsedProfile.Target)
-	}
+	fraction, _ := repository.FindOneFractionByIcon(parsedProfile.Target)
 
-	return &fraction
+	return fraction
 }
 
 func insertProfile(
@@ -227,7 +210,6 @@ func parseProfile(messageText string) *ProfileParseResult {
 			continue
 		}
 		match := allMatches[len(allMatches) - 1][1:]
-
 		groups := regular.SubexpNames()[1:]
 
 		for key, _ := range groups {
