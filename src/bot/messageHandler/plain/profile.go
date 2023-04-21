@@ -16,7 +16,11 @@ import (
 var regulars = [...]string {
 	`(?P<Username>[a-zA-Z0-9а-яА-ЯёЁ ,_\-!?\$<>]{3,25})` +
 		`\s\(` +
-		`(?P<Lead>\S?)(?P<Squad>[A-Z]{2})\s\|\s\S+` +
+		`(?P<Lead>[▫🔸]{0,2})` +
+		`(?P<Squad>[A-Z]{0,2})` +
+		`\s?\|?\s?` +
+		`(?P<Way>[⬛⬜🔲🔳]{0,2})` +
+		`\S{0,2}` +
 		`(?P<Fraction>Huǒqiáng|Aegis|V-hack|Phantoms|NetKings|NHS)` +
 		`\)`,
 	`💻: (?P<Level>\d+)`,
@@ -167,7 +171,6 @@ func insertProfile(
 	val, _ = strconv.ParseUint(parsedProfile.Stamina, 10, 64)
 	profile.Stamina = uint(val)
 
-	profile.Team = *team
 	profile.Fraction = *fraction
 	profile.User = *user
 	profile.MessageDate = messageTime
@@ -175,6 +178,13 @@ func insertProfile(
 	profile.Username = parsedProfile.Username
 	profile.Vkcoin, _ = strconv.ParseFloat(parsedProfile.Vkcoin, 10)
 	profile.Lead = getLeadType(parsedProfile.Lead)
+	profile.Way = getWayType(parsedProfile.Way)
+
+	if (team.Id > 0) {
+		profile.Team = *team
+	} else {
+		profile.TeamId = nil
+	}
 
 	if (target.Id > 0) {
 		profile.Target = *target
@@ -195,6 +205,30 @@ func getLeadType(icon string) uint {
 
 	if (icon == "▫") {
 		return 1
+	}
+
+	return 0
+}
+
+func getWayType(icon string) uint {
+	if (len(icon) == 0) {
+		return 0
+	}
+
+	if (icon == "⬛") {
+		return 1
+	}
+
+	if (icon == "⬜") {
+		return 2
+	}
+
+	if (icon == "🔲") {
+		return 3
+	}
+
+	if (icon == "🔳") {
+		return 4
 	}
 
 	return 0
@@ -254,6 +288,7 @@ type ProfileParseResult struct {
 	Squad string
 	Fraction string
 	Lead string
+	Way string
 	Level string
 	Experience string
 	Money string
