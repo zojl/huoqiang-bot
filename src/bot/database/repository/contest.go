@@ -16,7 +16,7 @@ func FindOneContestByFractionIdTypeCodeAndDate(fractionId uint, contestTypeCode 
 	err := db.Model(&contest).
 		Joins("JOIN contest_types ON contest_types.id = contests.type_id AND contest_types.code = ?", contestTypeCode).
 		Where(
-			"contests.fraction_id = ? AND contests.start_at < ? AND contests.end_at > ?",
+			"contests.fraction_id = ? AND contests.start_at <= ? AND contests.end_at >= ?",
 			fractionId,
 			date,
 			date,
