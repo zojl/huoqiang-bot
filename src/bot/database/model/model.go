@@ -11,11 +11,15 @@ func GetAllModels() []interface{} {
 		Team{},
 		Profile{},
 		Report{},
+		ContestType{},
+		Contest{},
+		ContestPoints{},
 	}
 }
 
 func CreateInitialValues(db *gorm.DB) {
 	fillFractions(db)
+	fillContestTypes(db)
 }
 
 func fillFractions(db *gorm.DB) {
@@ -25,7 +29,7 @@ func fillFractions(db *gorm.DB) {
 		return
 	}
 
-	fractions := []Fraction {
+	fractions := [...]Fraction {
 		{Name: "Aegis", Code: "ae", Icon: "💠"},
 		{Name: "V-hack", Code: "vh", Icon: "🚧"},
 		{Name: "Phantoms", Code: "ph", Icon: "🎭"},
@@ -38,4 +42,18 @@ func fillFractions(db *gorm.DB) {
 	db.Exec("TRUNCATE TABLE " + tableName + " RESTART IDENTITY;")
 
 	db.Create(&fractions)
+}
+
+func fillContestTypes(db *gorm.DB) {
+	contestTypes := [...]ContestType {
+		{Name: "Activity Contest", Code: "activity"},
+	}
+
+	for _, contestType := range contestTypes {
+		var existingType = ContestType{}
+		err := db.Unscoped().Model(&ContestType{}).Where("code = ?", contestType.Code).First(&existingType).Error
+		if (err != nil || existingType.Id == 0) {
+			db.Create(&contestType)
+		}
+	}
 }

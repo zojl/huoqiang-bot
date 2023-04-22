@@ -18,6 +18,7 @@ type Report struct {
 	Stamina uint
 	TransactionMoney uint
 	TransactionExperience uint
+	LostMoney uint
 	MessageDate time.Time
 	Created time.Time `gorm:"autoCreateTime"`
 }

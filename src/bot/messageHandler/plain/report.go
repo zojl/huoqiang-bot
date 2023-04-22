@@ -19,6 +19,7 @@ var reportRegulars = [...]string {
 	`Твоя команда (?P<BattleResult>успешно отбила атаку.|не смогла отбить атаку.)`, //this ones for defence
 	`Ты получил:(?:\nДеньги: ?(?P<RewardMoney>\d+)💵)?\nОпыт: (?P<RewardExperience>\d+)💡(?:\nVKCoin: (?P<RewardVkc>\d+\.?\d+)💸)?\nОсталось выносливости: 🔋(?P<Stamina>\d+)%`,
 	`(?:Вы перехватили транзакцию \S+|Вы получили награду за защиту:)\nДеньги: (?P<TransactionMoney>\d+)💵\nОпыт: (?P<TransactionExperience>\d+)💡`,
+	`Твоя компания не отбила атаку.\nТы потерял:\nДеньги: (?P<LostMoney>100)💵`,
 }
 
 var compiledReportRegulars = make([]*regexp.Regexp, len(reportRegulars), len(reportRegulars))
@@ -54,7 +55,17 @@ func HandleReport(messageText string, senderId int, messageTime time.Time) *Repo
 	}
 
 	response.IsStored = storeReport(parsedReport, user, date, target, messageTime)
+	if (!response.IsStored) {
+		return &response
+	}
 
+	lastProfile, profileErr := repository.FindLastProfileByVkIdForBattleDate(uint(senderId), date)
+	if (profileErr != nil) {
+		return &response
+	}
+	response.IsProfileFound = true
+
+	response.ContestResult = applyContest(parsedReport, lastProfile, senderId, date)
 	return &response
 }
 
@@ -118,8 +129,9 @@ func storeReport(parsedReport *ReportParseResult, user *model.User, date *time.T
 	report.TransactionMoney = uint(val)
 	val, _ = strconv.ParseUint(parsedReport.TransactionExperience, 10, 64)
 	report.TransactionExperience = uint(val)
+	val, _ = strconv.ParseUint(parsedReport.LostMoney, 10, 64)
+	report.LostMoney = uint(val)
 	report.RewardVkc, _ = strconv.ParseFloat(parsedReport.Stamina, 10)
-
 
 	db := database.GetDb()
 	db.Create(&report)
@@ -174,12 +186,65 @@ type ReportParseResult struct {
 	Stamina string
 	TransactionMoney string
 	TransactionExperience string
+	LostMoney string
 }
 
 type ReportResponse struct {
-	//IsToday bool
 	IsFirst bool
 	IsParticipated bool
 	IsStored bool
 	IsUserExist bool
+	IsProfileFound bool
+	ContestResult *ContestReport
+}
+
+func applyContest(parsedReport *ReportParseResult, lastProfile *model.Profile, senderId int, date *time.Time) *ContestReport {
+	contestReport := ContestReport{}
+
+	contest, contestErr := repository.FindOneContestByFractionIdTypeCodeAndDate(lastProfile.FractionId, "activity", date)
+	if (contestErr != nil) {
+		return nil;
+	}
+
+	pointsToday := repository.CountContestPointsByContestUserAndBattleDate(contest, &lastProfile.User, date)
+	if (pointsToday > 0) {
+		contestReport.Message = "Сегодня баллы за конкурс уже начислялись"
+	}
+
+	staminaVal, _ := strconv.ParseUint(parsedReport.Stamina, 10, 64)
+	if (lastProfile.Stamina > uint(staminaVal)) {
+		contestReport.Message = "Некорректный профиль до битвы, выносливость профиля ниже, чем выносливость отчёта, баллы не начислены"
+	}
+
+	points := uint(staminaVal)
+	lostMoneyVal, _ := strconv.ParseUint(parsedReport.LostMoney, 10, 64)
+	lostMoney := uint(lostMoneyVal)
+	if (lostMoney >= points) {
+		points = 0
+	} else {
+		points = points - lostMoney
+	}
+
+	contestReport.Points = points
+	contestReport.Message = fmt.Sprintf("Начислены баллы в рамках конкурса «%s» за участие в битве: %d", contest.Name, points)
+	storeContestPoints(lastProfile.UserId, contest, points, date)
+
+	return &contestReport
+}
+
+func storeContestPoints(userId uint, contest *model.Contest, points uint, date *time.Time) {
+	contestPoints := model.ContestPoints{
+		UserId: userId,
+		Contest: contest,
+		Points: int(points),
+		BattleDate: date,
+	}
+
+	db := database.GetDb()
+	db.Create(&contestPoints)
+}
+
+type ContestReport struct {
+	Message string
+	Points uint
 }

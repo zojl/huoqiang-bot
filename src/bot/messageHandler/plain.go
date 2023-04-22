@@ -51,7 +51,6 @@ func handleHwForward(message object.MessagesMessage, parentMessage *object.Messa
 		}
 
 		reportResult := plain.HandleReport(message.Text, senderId, messageDate)
-		log.Printf("%+v\n", reportResult)
 
 		if (!reportResult.IsUserExist) {
 			ReplyTo(parentMessage, "Отчёт не принят, сначала нужно отправить боту профиль.", vk)
@@ -73,7 +72,16 @@ func handleHwForward(message object.MessagesMessage, parentMessage *object.Messa
 			return
 		}
 
-		ReplyTo(parentMessage, "Отчёт принят. Спасибо за участие в битве!", vk)
+		if (!reportResult.IsProfileFound) {
+			ReplyTo(parentMessage, "Отчёт принят, но не найден профиль за период между этой битвой и прошлой. Не забывайте сдавать профиль.", vk)
+			return
+		}
+
+		message := "Отчёт принят. Спасибо за участие в битве!"
+		if (reportResult.ContestResult != nil) {
+			message = message + "\n" + reportResult.ContestResult.Message
+		}
+		ReplyTo(parentMessage, message, vk)
 
 		return
 	}
