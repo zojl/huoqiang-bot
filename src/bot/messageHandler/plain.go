@@ -37,10 +37,18 @@ func handleHwForward(message object.MessagesMessage, parentMessage *object.Messa
 			log.Println("That's a profile message from " + strconv.Itoa(senderId))
 			log.Println("Contents: " + message.Text)
 		}
-		if (plain.HandleProfile(message.Text, senderId, messageDate)) {
-			ReplyTo(parentMessage, "Профиль принят.", vk)
+
+		profileHandleResult := plain.HandleProfile(message.Text, senderId, messageDate)
+		if (profileHandleResult.IsInserted) {
+			message := "Профиль принят."
+			for _, messageNote := range profileHandleResult.Messages {
+				message += "\n" + messageNote
+			}
+			ReplyTo(parentMessage, message, vk)
+			return
 		}
 
+		ReplyTo(parentMessage, "Произошла ошибка, профиль не принят. Повторите ещё раз позже.", vk)
 		return
 	}
 

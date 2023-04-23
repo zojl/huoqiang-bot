@@ -68,17 +68,18 @@ var regulars = [...]string {
 var compiledRegulars = make([]*regexp.Regexp, len(regulars), len(regulars))
 var areRegularsCompiled = false
 
-func HandleProfile(messageText string, senderId int, messageTime time.Time) bool {
+func HandleProfile(messageText string, senderId int, messageTime time.Time) *ProfileResponse {
 	parsedProfile := parseProfile(messageText)
 	return storeParsedProfile(parsedProfile, senderId, messageTime)
 }
 
-func storeParsedProfile(parsedProfile *ProfileParseResult, senderId int, messageTime time.Time) bool {
+func storeParsedProfile(parsedProfile *ProfileParseResult, senderId int, messageTime time.Time) *ProfileResponse {
 	user := repository.FindOrCreateUserByVkId(senderId)
 	fraction := getFraction(parsedProfile)
 	team := getTeam(parsedProfile, fraction)
 	target := getTarget(parsedProfile, fraction)
-	return insertProfile(parsedProfile, user, fraction, team, target, messageTime)
+	isProfileInserted := insertProfile(parsedProfile, user, fraction, team, target, messageTime)
+	return validateInsertedProfile(isProfileInserted, parsedProfile)
 }
 
 func getFraction(parsedProfile *ProfileParseResult) *model.Fraction {
@@ -264,6 +265,38 @@ func parseProfile(messageText string) *ProfileParseResult {
 	return &parsedProfile
 }
 
+func validateInsertedProfile(isProfileInserted bool, parsedProfile *ProfileParseResult) *ProfileResponse {
+	response := ProfileResponse{
+		IsInserted: isProfileInserted,
+		Messages: make([]string, 0, 5),
+	}
+
+	if (len(parsedProfile.Target) == 0) {
+		response.Messages = append(response.Messages, "Не выбрана цель на следующую битву! Не забудьте выбрать цель перед битвой.")
+	}
+
+	if (len(parsedProfile.Money) > 0) {
+		money, _ := strconv.ParseUint(parsedProfile.Money, 10, 64)
+		level, _ := strconv.ParseUint(parsedProfile.Level, 10, 64)
+		if (money > level*100) {
+			response.Messages = append(response.Messages, "Очень много денег! Не забудьте слить деньги в акции перед битвой.")
+		} else if (money > 100) {
+			response.Messages = append(response.Messages, "Рекомендуется слить деньги до значения меньше 100 перед битвой.")
+		}
+	}
+
+	if (len(parsedProfile.Money) > 0) {
+		stamina, _ := strconv.ParseUint(parsedProfile.Stamina, 10, 64)
+		if (stamina < 200) {
+			response.Messages = append(response.Messages, "Мало выносливости! Не забудьте пополнить выносливость перед битвой.")
+		} else if (stamina < 250) {
+			response.Messages = append(response.Messages, "Рекомендуется пополнить выносливость до 250 перед битвой.")
+		}
+	}
+
+	return &response
+}
+
 func getCompiledRegulars () []*regexp.Regexp {
 
 	if (areRegularsCompiled) {
@@ -308,4 +341,9 @@ type ProfileParseResult struct {
 	Wisdom string
 	Stamina string
 	Target string
+}
+
+type ProfileResponse struct {
+	IsInserted bool
+	Messages []string
 }
