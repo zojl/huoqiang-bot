@@ -63,6 +63,7 @@ var regulars = [...]string {
 	`🔋Выносливость: (?P<Stamina>\d+)`,
 	`\n⚔: (?P<Target>[🔐💠🚧🎭🈵🔱🇺🇸]{1,2})`,
 	`Занятие:\n[А-Яа-я ⚔]*(?P<Target>[🔐💠🚧🎭🈵🔱🇺🇸]{1,2})`,
+	`(?:До 🛌:|🛌До сна осталось:) (?P<BeforeSleepHour>\d{1,2}) (?:ч\.|час.{0,2})(?: и)? (?P<BeforeSleepMinute>\d{1,2}) (?:мин\.|минут.?)`,
 }
 
 var compiledRegulars = make([]*regexp.Regexp, len(regulars), len(regulars))
@@ -250,7 +251,7 @@ func parseProfile(messageText string) *ProfileParseResult {
 		for key, _ := range groups {
 			field := reflection.Elem().FieldByName(groups[key])
 			if !field.IsValid() {
-				fmt.Println("invalid field " + groups[key])
+				log.Printf("invalid field %s, %s, %s", key, groups[key], match[key])
 			}
 
 			value := match[key]
@@ -291,6 +292,15 @@ func validateInsertedProfile(isProfileInserted bool, parsedProfile *ProfileParse
 			response.Messages = append(response.Messages, "Мало выносливости! Не забудьте пополнить выносливость перед битвой.")
 		} else if (stamina < 250) {
 			response.Messages = append(response.Messages, "Рекомендуется пополнить выносливость до 250 перед битвой.")
+		}
+	}
+
+	if (len(parsedProfile.BeforeSleepHour) > 0) {
+		hour, _ := strconv.ParseUint(parsedProfile.BeforeSleepHour, 10, 64)
+		if (hour < 24) {
+			response.Messages = append(response.Messages, "Меньше 24 часов до сна, не забудьте отправить персонажа спать перед битвой.")
+		} else if (hour < 12) {
+			response.Messages = append(response.Messages, "Меньше 12 часов до сна! Не проспите битву!")
 		}
 	}
 
@@ -341,6 +351,8 @@ type ProfileParseResult struct {
 	Wisdom string
 	Stamina string
 	Target string
+	BeforeSleepHour string
+	BeforeSleepMinute string
 }
 
 type ProfileResponse struct {
