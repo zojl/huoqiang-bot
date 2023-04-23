@@ -273,35 +273,39 @@ func validateInsertedProfile(isProfileInserted bool, parsedProfile *ProfileParse
 	}
 
 	if (len(parsedProfile.Target) == 0) {
-		response.Messages = append(response.Messages, "Не выбрана цель на следующую битву! Не забудьте выбрать цель перед битвой.")
+		response.Messages = append(response.Messages, "‼️Не выбрана цель на следующую битву! Не забудьте выбрать цель перед битвой.")
 	}
 
 	if (len(parsedProfile.Money) > 0) {
 		money, _ := strconv.ParseUint(parsedProfile.Money, 10, 64)
 		level, _ := strconv.ParseUint(parsedProfile.Level, 10, 64)
-		if (money > level*100) {
-			response.Messages = append(response.Messages, "Очень много денег! Не забудьте слить деньги в акции перед битвой.")
-		} else if (money > 100) {
-			response.Messages = append(response.Messages, "Рекомендуется слить деньги до значения меньше 100 перед битвой.")
+		if (money >= level*100) {
+			response.Messages = append(response.Messages, "‼️Очень много денег! Не забудьте слить деньги в акции перед битвой.")
+		} else if (money >= 100) {
+			response.Messages = append(response.Messages, "⚠️Рекомендуется слить деньги до значения меньше 100 перед битвой.")
 		}
 	}
 
 	if (len(parsedProfile.Money) > 0) {
 		stamina, _ := strconv.ParseUint(parsedProfile.Stamina, 10, 64)
 		if (stamina < 200) {
-			response.Messages = append(response.Messages, "Мало выносливости! Не забудьте пополнить выносливость перед битвой.")
+			response.Messages = append(response.Messages, "‼️Мало выносливости! Не забудьте пополнить выносливость перед битвой.")
 		} else if (stamina < 250) {
-			response.Messages = append(response.Messages, "Рекомендуется пополнить выносливость до 250 перед битвой.")
+			response.Messages = append(response.Messages, "⚠️Рекомендуется пополнить выносливость до 250 перед битвой.")
 		}
 	}
 
 	if (len(parsedProfile.BeforeSleepHour) > 0) {
 		hour, _ := strconv.ParseUint(parsedProfile.BeforeSleepHour, 10, 64)
 		if (hour < 24) {
-			response.Messages = append(response.Messages, "Меньше 24 часов до сна, не забудьте отправить персонажа спать перед битвой.")
+			response.Messages = append(response.Messages, "ℹ️Меньше 24 часов до сна, не забудьте отправить персонажа спать перед битвой.")
 		} else if (hour < 12) {
-			response.Messages = append(response.Messages, "Меньше 12 часов до сна! Не проспите битву!")
+			response.Messages = append(response.Messages, "⚠️Меньше 12 часов до сна! Не проспите битву!")
 		}
+	}
+
+	if (len(response.Messages) == 0) {
+		response.Messages = append(response.Messages, "✅Вы отлично подготовлены к битве!😎")
 	}
 
 	return &response
