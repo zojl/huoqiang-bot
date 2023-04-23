@@ -3,8 +3,8 @@ package repository
 import (
 	"time"
 
-	"huoqiang/bot/database"
-	"huoqiang/bot/database/model"
+	"jiqiren/bot/database"
+	"jiqiren/bot/database/model"
 )
 
 func CountReportsByUserAndDate(vkId int, date *time.Time) int64 {

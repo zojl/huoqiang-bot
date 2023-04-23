@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"huoqiang/bot/database"
-	"huoqiang/bot/database/model"
+	"jiqiren/bot/database"
+	"jiqiren/bot/database/model"
 )
 
 

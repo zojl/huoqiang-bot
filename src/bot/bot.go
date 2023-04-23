@@ -7,8 +7,8 @@ import (
     "os"
     "strings"
 
-    "huoqiang/bot/messageHandler"
-    "huoqiang/bot/database"
+    "jiqiren/bot/messageHandler"
+    "jiqiren/bot/database"
 
     "github.com/SevereCloud/vksdk/v2/api"
     "github.com/SevereCloud/vksdk/v2/events"

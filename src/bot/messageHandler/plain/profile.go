@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	"huoqiang/bot/database"
-	"huoqiang/bot/database/model"
-	"huoqiang/bot/database/repository"
+	"jiqiren/bot/database"
+	"jiqiren/bot/database/model"
+	"jiqiren/bot/database/repository"
 )
 
 var regulars = [...]string {

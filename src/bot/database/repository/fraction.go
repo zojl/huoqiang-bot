@@ -3,8 +3,8 @@ package repository
 import (
 	"fmt"
 
-	"huoqiang/bot/database"
-	"huoqiang/bot/database/model"
+	"jiqiren/bot/database"
+	"jiqiren/bot/database/model"
 )
 
 func FindOneFractionByIcon(icon string) (*model.Fraction, error) {

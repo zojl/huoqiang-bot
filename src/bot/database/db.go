@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"huoqiang/bot/database/model"
+	"jiqiren/bot/database/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

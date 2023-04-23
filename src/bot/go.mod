@@ -1,4 +1,4 @@
-module huoqiang/bot
+module jiqiren/bot
 
 go 1.20
 

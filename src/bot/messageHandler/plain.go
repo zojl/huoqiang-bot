@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"huoqiang/bot/messageHandler/plain"
+	"jiqiren/bot/messageHandler/plain"
 
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
