@@ -216,18 +216,17 @@ func applyContest(parsedReport *ReportParseResult, lastProfile *model.Profile, s
 		contestReport.Message = "Некорректный профиль до битвы, выносливость профиля ниже, чем выносливость отчёта, баллы не начислены"
 	}
 
-	points := uint(staminaVal)
-	lostMoneyVal, _ := strconv.ParseUint(parsedReport.LostMoney, 10, 64)
-	lostMoney := uint(lostMoneyVal)
+	points := staminaVal * 4
+	lostMoney, _ := strconv.ParseUint(parsedReport.LostMoney, 10, 64)
 	if (lostMoney >= points) {
 		points = 0
 	} else {
 		points = points - lostMoney
 	}
 
-	contestReport.Points = points
+	contestReport.Points = uint(points)
 	contestReport.Message = fmt.Sprintf("Начислены баллы в рамках конкурса «%s» за участие в битве: %d", contest.Name, points)
-	storeContestPoints(lastProfile.UserId, contest, points, date)
+	storeContestPoints(lastProfile.UserId, contest, uint(points), date)
 
 	return &contestReport
 }
