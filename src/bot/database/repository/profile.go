@@ -29,3 +29,17 @@ func FindLastProfileByVkIdForBattleDate(vkId uint, battleDate *time.Time) (*mode
 
 	return &profile, nil
 }
+
+func FindLastProfileByVkId(vkId uint) (*model.Profile, error) {
+	db := database.GetDb()
+	profile := model.Profile{}
+
+	err := db.Model(&profile).Joins("JOIN users ON users.id = profiles.user_id").
+		Where("users.vk_id = ?", vkId).Last(&profile).Error
+
+	if (err != nil) {
+		return nil, fmt.Errorf("No profiles associated with vk id: %d", vkId)
+	}
+
+	return &profile, nil
+}
