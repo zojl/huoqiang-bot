@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"jiqiren/bot/messageHandler/plain"
+	"jiqiren/bot/messageHandler/reply"
 
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
@@ -39,16 +40,18 @@ func handleHwForward(message object.MessagesMessage, parentMessage *object.Messa
 		}
 
 		profileHandleResult := plain.HandleProfile(message.Text, senderId, messageDate)
+		replyParams := reply.MakeParams(parentMessage, vk)
+
 		if (profileHandleResult.IsInserted) {
 			message := "Профиль принят."
 			for _, messageNote := range profileHandleResult.Messages {
 				message += "\n" + messageNote
 			}
-			ReplyTo(parentMessage, message, vk)
+			replyParams.Reply(message)
 			return
 		}
 
-		ReplyTo(parentMessage, "Произошла ошибка, профиль не принят. Повторите ещё раз позже.", vk)
+		replyParams.Reply("Произошла ошибка, профиль не принят. Повторите ещё раз позже.")
 		return
 	}
 
@@ -60,28 +63,29 @@ func handleHwForward(message object.MessagesMessage, parentMessage *object.Messa
 
 		reportResult := plain.HandleReport(message.Text, senderId, messageDate)
 
+		replyParams := reply.MakeParams(parentMessage, vk)
 		if (!reportResult.IsUserExist) {
-			ReplyTo(parentMessage, "Отчёт не принят, сначала нужно отправить боту профиль.", vk)
+			replyParams.Reply("Отчёт не принят, сначала нужно отправить боту профиль.")
 			return
 		}
 
 		if (!reportResult.IsFirst) {
-			ReplyTo(parentMessage, "Отчёт не принят, повторный отчёт за эту дату.", vk)
+			replyParams.Reply("Отчёт не принят, повторный отчёт за эту дату.")
 			return
 		}
 
 		if (!reportResult.IsStored) {
-			ReplyTo(parentMessage, "Отчёт не принят. Неизвестная ошибка.", vk)
+			replyParams.Reply("Отчёт не принят. Неизвестная ошибка.")
 			return
 		}
 
 		if (!reportResult.IsParticipated) {
-			ReplyTo(parentMessage, "Отчёт принят. Участие в битвах важно для фракции, не пропускайте битвы!", vk)
+			replyParams.Reply("Отчёт принят. Участие в битвах важно для фракции, не пропускайте битвы!")
 			return
 		}
 
 		if (!reportResult.IsProfileFound) {
-			ReplyTo(parentMessage, "Отчёт принят, но не найден профиль за период между этой битвой и прошлой. Не забывайте сдавать профиль.", vk)
+			replyParams.Reply("Отчёт принят, но не найден профиль за период между этой битвой и прошлой. Не забывайте сдавать профиль.")
 			return
 		}
 
@@ -89,7 +93,7 @@ func handleHwForward(message object.MessagesMessage, parentMessage *object.Messa
 		if (reportResult.ContestResult != nil) {
 			message = message + "\n" + reportResult.ContestResult.Message
 		}
-		ReplyTo(parentMessage, message, vk)
+		replyParams.Reply(message)
 
 		return
 	}

@@ -1,4 +1,4 @@
-package messageHandler
+package reply
 
 import (
 	"encoding/json"
@@ -9,22 +9,36 @@ import (
 	"github.com/SevereCloud/vksdk/v2/api/params"
 )
 
-func ReplyTo(sourceMessage *object.MessagesMessage, text string, vk *api.VK) {
+func MakeParams(sourceMessage *object.MessagesMessage, vk *api.VK) *Params {
+	params := Params{
+		sourceMessage: sourceMessage,
+		vk: vk,
+	}
+
+	return &params
+}
+
+type Params struct{
+	sourceMessage *object.MessagesMessage
+	vk *api.VK
+}
+
+func (replyParams Params) Reply(text string, ) {
 	messageBuilder := params.NewMessagesSendBuilder()
 	messageBuilder.Message(text)
 	messageBuilder.RandomID(0)
-	messageBuilder.PeerID(sourceMessage.PeerID)
+	messageBuilder.PeerID(replyParams.sourceMessage.PeerID)
 
 	forward := Forward{}
 	forward.IsReply = 1
-	forward.PeerID = sourceMessage.PeerID
-	messageIds := []int{sourceMessage.ConversationMessageID}
+	forward.PeerID = replyParams.sourceMessage.PeerID
+	messageIds := []int{replyParams.sourceMessage.ConversationMessageID}
 	forward.ConversationMessageIDs = messageIds
 	jsonMessageRaw, _ := json.Marshal(forward)
 	jsonMessage := string(jsonMessageRaw)
 	messageBuilder.Forward(jsonMessage)
 
-	_, err := vk.MessagesSend(messageBuilder.Params)
+	_, err := replyParams.vk.MessagesSend(messageBuilder.Params)
 	if err != nil {
 		log.Fatal(err)
 	}

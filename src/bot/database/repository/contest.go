@@ -29,3 +29,23 @@ func FindOneContestByFractionIdTypeCodeAndDate(fractionId uint, contestTypeCode 
 
 	return &contest, nil
 }
+
+func FindOneContestByFractionIdAndDate(fractionId uint, date *time.Time) (*model.Contest, error) {
+	db := database.GetDb()
+	contest := model.Contest{}
+
+	err := db.Model(&contest).
+		Where(
+			"contests.fraction_id = ? AND contests.start_at <= ? AND contests.end_at >= ?",
+			fractionId,
+			date,
+			date,
+			).
+		First(&contest).Error
+
+	if (err != nil) {
+		return nil, fmt.Errorf("No contest found by criteria: %d, %+v", fractionId, date)
+	}
+
+	return &contest, nil
+}

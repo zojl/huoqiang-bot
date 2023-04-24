@@ -38,7 +38,7 @@ func main() {
         }
 
         if (strings.HasPrefix(obj.Message.Text, prefix)) {
-            log.Printf("Received command: %s", obj.Message);
+            messageHandler.HandleCommand(&obj, vk)
         } else {
             messageHandler.HandlePlain(obj, vk)
         }
