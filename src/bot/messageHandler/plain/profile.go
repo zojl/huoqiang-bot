@@ -23,7 +23,7 @@ var regulars = [...]string {
 		`\S{0,2}` +
 		`(?P<Fraction>Huǒqiáng|Aegis|V-hack|Phantoms|NetKings|NHS)` +
 		`\)`,
-	`💻: (?P<Level>\d+)`,
+	`💻: (?P<Level>\d+);`,
 	`💻Уровень: (?P<Level>\d+)`,
 	`💡: (?P<Experience>\d+)`,
 	`💡Опыт: (?P<Experience>\d+)`,
