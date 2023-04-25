@@ -216,7 +216,7 @@ func applyContest(parsedReport *ReportParseResult, lastProfile *model.Profile, s
 		contestReport.Message = "Некорректный профиль до битвы, выносливость профиля ниже, чем выносливость отчёта, баллы не начислены"
 	}
 
-	points := staminaVal * 4
+	points := uint64(lastProfile.Stamina * 4)
 	lostMoney, _ := strconv.ParseUint(parsedReport.LostMoney, 10, 64)
 	if (lostMoney >= points) {
 		points = 0
