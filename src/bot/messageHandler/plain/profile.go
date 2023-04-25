@@ -298,7 +298,7 @@ func validateInsertedProfile(isProfileInserted bool, parsedProfile *ProfileParse
 	if (len(parsedProfile.BeforeSleepHour) > 0) {
 		hour, _ := strconv.ParseUint(parsedProfile.BeforeSleepHour, 10, 64)
 		if (hour < 24) {
-			response.Messages = append(response.Messages, "ℹ️Меньше 24 часов до сна, не забудьте отправить персонажа спать перед битвой.")
+			response.Messages = append(response.Messages, "ℹ️Меньше 24 часов до сна, не забудьте отправить персонажа спать после битвы.")
 		} else if (hour < 12) {
 			response.Messages = append(response.Messages, "⚠️Меньше 12 часов до сна! Не проспите битву!")
 		}
