@@ -14,7 +14,7 @@ type Profile struct {
 	Level uint
 	Experience uint
 	Money uint
-	Vkcoin float64 `gorm:"type:decimal(16,6);"`
+	Vkcoin float64 `gorm:"type:decimal(21,6);"`
 	Points uint
 	Bitcoins uint
 	Disks uint
