@@ -12,6 +12,7 @@ services:
       - 8052:80
   db:
     image: postgres:15.2-alpine
+    restart: unless-stopped
     env_file: env
     volumes:
       - ./volumes/db:/var/lib/postgresql/data
