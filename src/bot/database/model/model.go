@@ -14,6 +14,7 @@ func GetAllModels() []interface{} {
 		ContestType{},
 		Contest{},
 		ContestPoints{},
+		ContestProjectMessages{},
 	}
 }
 
@@ -47,6 +48,7 @@ func fillFractions(db *gorm.DB) {
 func fillContestTypes(db *gorm.DB) {
 	contestTypes := [...]ContestType {
 		{Name: "Activity Contest", Code: "activity"},
+		{Name: "Project Contest", Code: "project"},
 	}
 
 	for _, contestType := range contestTypes {

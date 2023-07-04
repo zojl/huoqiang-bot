@@ -17,6 +17,7 @@ import (
 
 const battleReportStart = "Результаты битвы за "
 const battleReportEnd = "Или встань на 🔐 защиту своей компании."
+const teamProjectResultPrefix = "Ты вложился в запил командного проекта."
 var profileIcons = [...]string {"💻", "💡", "💵", "📈", "💿", "📄", "💽", "📑", "🔘", "💸", "🔥", "🔋", "📡", "💾", "📱", "🔎"}
 
 func HandlePlain(messageObject events.MessageNewObject, vk *api.VK) {
@@ -98,6 +99,20 @@ func handleHwForward(message object.MessagesMessage, parentMessage *object.Messa
 		return
 	}
 
+	if (isTeamProjectResult(message.Text)) {
+		if (os.Getenv("ENV") == "dev") {
+			log.Println("team project result from " + strconv.Itoa(senderId))
+			log.Println("Contents: " + message.Text)
+		}
+
+		projectResult := plain.HandleTeamProject(message, senderId, messageDate)
+
+		if (projectResult) {
+			replyParams := reply.MakeParams(parentMessage, vk)
+			replyParams.Reply("Вклад в проект принят")
+		}
+	}
+
 	log.Println("bad message " + message.Text)
 }
 
@@ -117,4 +132,8 @@ func isBattleReport(messageText string) bool {
 	}
 
 	return strings.HasSuffix(messageText, battleReportEnd)
+}
+
+func isTeamProjectResult(messageText string) bool {
+	return strings.HasPrefix(messageText, teamProjectResultPrefix)
 }

@@ -37,7 +37,16 @@ func (params Contest) Handle() {
     userMock := model.User{
         Id: profile.UserId,
     }
-    pointsSum := repository.SumPointsByContestAndUser(contest, &userMock)
+
+    fmt.Printf("%+v", contest)
+    var pointsSum int64 = 0
     
+    contestType, _ := (repository.FindOneContestTypeById(contest.TypeId));
+    if (contestType.Code == "project") {
+        pointsSum = repository.CountContestProjectMessagesByVkIdAndContestId(contest, &userMock)
+    } else {
+        pointsSum = repository.SumPointsByContestAndUser(contest, &userMock)
+    }
+
     replyParams.Reply(fmt.Sprintf("Твой текущий счёт в конкурсе «%s»: %d", contest.Name, pointsSum))
 }
