@@ -17,7 +17,8 @@ import (
 
 const battleReportStart = "Результаты битвы за "
 const battleReportEnd = "Или встань на 🔐 защиту своей компании."
-const teamProjectResultPrefix = "Ты вложился в запил командного проекта."
+const teamProjectResultPrefix1 = "Ты вложился в запил командного проекта."
+const teamProjectResultPrefix2 = "Ты помог команде пилить проект."
 var profileIcons = [...]string {"💻", "💡", "💵", "📈", "💿", "📄", "💽", "📑", "🔘", "💸", "🔥", "🔋", "📡", "💾", "📱", "🔎"}
 
 func HandlePlain(messageObject events.MessageNewObject, vk *api.VK) {
@@ -135,5 +136,14 @@ func isBattleReport(messageText string) bool {
 }
 
 func isTeamProjectResult(messageText string) bool {
-	return strings.HasPrefix(messageText, teamProjectResultPrefix)
+	if strings.HasPrefix(messageText, teamProjectResultPrefix1) {
+		return true
+	}
+
+
+	if strings.HasPrefix(messageText, teamProjectResultPrefix2) {
+		return true
+	}
+
+	return false
 }
